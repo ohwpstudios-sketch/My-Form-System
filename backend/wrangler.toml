@@ -1,0 +1,121 @@
+name = "form-system-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Account ID (get from Cloudflare dashboard)
+account_id = "ea2eb3a9813660dfca2a60e594858538"
+
+# Worker configuration
+workers_dev = true
+
+# Environment variables (set via wrangler secret put)
+# Required secrets:
+# - PAYSTACK_SECRET_KEY: Your Paystack secret key
+# - API_SECRET: Secret for protecting admin endpoints
+# 
+# Optional secrets:
+# - RESEND_API_KEY: Email notification service
+# - WEBHOOK_URL: External webhook endpoint
+# - RECAPTCHA_SECRET_KEY: Google reCAPTCHA secret
+# - TURNSTILE_SECRET_KEY: Cloudflare Turnstile secret
+
+# D1 Database binding (Main database for forms and submissions)
+[[d1_databases]]
+binding = "DB"
+database_name = "form_submissions"
+database_id = "a05de2d4-d39c-4661-ba6c-82b2075c1f55"  # Get from: wrangler d1 create form_submissions
+
+# KV namespace for form configurations (Fast access to form configs)
+[[kv_namespaces]]
+binding = "FORMS_KV"
+id = "9f57f9ee352d4a7a9ec6151f9e8f0302"  # Get from: wrangler kv:namespace create "FORMS_KV"
+
+# R2 bucket for file uploads (Optional - for storing uploaded files)
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "form-uploads"
+# preview_bucket_name = "form-uploads-preview"  # Uncomment for local dev
+
+# Durable Objects (Optional - for advanced features like real-time collaboration)
+# [[durable_objects.bindings]]
+# name = "FORM_SESSIONS"
+# class_name = "FormSession"
+
+# Analytics Engine binding (Optional - for advanced analytics)
+# [[analytics_engine_datasets]]
+# binding = "FORM_ANALYTICS"
+
+# Rate limiting configuration (Optional)
+# [limits]
+# cpu_ms = 50
+
+# Observability
+[observability]
+enabled = true
+
+# Build configuration
+[build]
+command = ""
+
+# Upload rules (exclude unnecessary files)
+[upload]
+format = "service-worker"
+
+# Routes for production (update with your domain)
+[env.production]
+name = "form-system-api"
+routes = [
+  { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
+]
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "form_submissions"
+database_id = "YOUR_PROD_DATABASE_ID"
+
+[[env.production.kv_namespaces]]
+binding = "FORMS_KV"
+id = "YOUR_PROD_KV_ID"
+
+[[env.production.r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "form-uploads-prod"
+
+# Development environment
+[env.development]
+name = "form-system-api-dev"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "form_submissions_dev"
+database_id = "YOUR_DEV_DATABASE_ID"
+
+[[env.development.kv_namespaces]]
+binding = "FORMS_KV"
+id = "YOUR_DEV_KV_ID"
+
+[[env.development.r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "form-uploads-dev"
+
+# Staging environment (optional)
+[env.staging]
+name = "form-system-api-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "form_submissions_staging"
+database_id = "YOUR_STAGING_DATABASE_ID"
+
+[[env.staging.kv_namespaces]]
+binding = "FORMS_KV"
+id = "YOUR_STAGING_KV_ID"
+
+# Triggers (Optional - for scheduled tasks)
+# [triggers]
+# crons = ["0 0 * * *"]  # Run daily at midnight
+
+# Tail consumers (Optional - for log streaming)
+# [[tail_consumers]]
+# service = "form-system-logs"
